@@ -4,23 +4,33 @@ import ()
 
 // 集合体のインターフェース
 type Aggregate interface {
-	iterator()
+	Iterator() Iterator
 }
 
 // 数え上げる人のインターフェース
 type Iterator interface {
-	hasNext() bool
-	next()
+	HasNext() bool
+	Next() interface{}
 }
 
 // 本棚 - Aggregateの実装
 type BookShelf struct {
 	books []*Book
-	last  int
 }
 
-func (bs *BookShelf) iterator() *BookShelfIterator {
-	return NewBookShelfIterator()
+func NewBookShelf() *BookShelf {
+	return &BookShelf{
+		books: []*Book{},
+	}
+}
+func (bs *BookShelf) Iterator() Iterator {
+	return NewBookShelfIterator(bs)
+}
+func (bs *BookShelf) GetBookAt(i int) *Book {
+	return bs.books[i]
+}
+func (bs *BookShelf) Add(b *Book) {
+	bs.books = append(bs.books, b)
 }
 
 // 本棚の中身を数え上げる人 - Iteratorの実装
@@ -29,14 +39,22 @@ type BookShelfIterator struct {
 	index     int
 }
 
-func NewBookShelfIterator() *BookShelfIterator {
-	return &BookShelfIterator{}
+func NewBookShelfIterator(bs *BookShelf) Iterator {
+	return &BookShelfIterator{
+		bookShelf: bs,
+		index:     0,
+	}
 }
-func (it *BookShelfIterator) hasNext() bool {
-	return true
+func (it *BookShelfIterator) HasNext() bool {
+	if it.index < len(it.bookShelf.books) {
+		return true
+	}
+	return false
 }
-func (it *BookShelfIterator) next() *Book {
-	return &Book{}
+func (it *BookShelfIterator) Next() interface{} {
+	b := it.bookShelf.GetBookAt(it.index)
+	it.index++
+	return b
 }
 
 // 本
